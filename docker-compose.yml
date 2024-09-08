@@ -1,0 +1,47 @@
+services:
+
+    http:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        environment:
+            GRPC_HOST: grpc
+            PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: python
+            # PYTHONPATH: /service/protobufs:${PYTHONPATH}
+            # PYTHONPATH: "${PYTHONPATH}:/service/protobufs"
+            PYTHONPATH: /service/src:/service/protobufs
+            FLASK_APP: marketplace.py
+        image: http
+        # entrypoint: [ "flask", "run", "--host=0.0.0.0" ]
+        # entrypoint: [ 'sh', '/service/src/startmarketplace.sh' ]
+        # command: [ 'sh', '/service/src/startmarketplace.sh' ]
+        # entrypoint: /bin/sh -c 'tail -f /dev/null'
+        working_dir: /service/src
+        networks:
+            - microservice
+        expose:
+            - 5000
+        ports:
+            - 5000:5000
+        # volumes:
+        #     - ./src:/service/src
+
+    grpc:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        image: grpc
+        entrypoint: [ "python", "recommendations.py" ]
+        expose:
+            - 50051
+        ports:
+            - 50051:50051
+        networks:
+            - microservice
+        # volumes:
+        #     - ./src:/service/src
+        environment:
+            - PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python
+
+networks:
+    microservice:
